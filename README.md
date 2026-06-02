@@ -150,7 +150,7 @@ Now we apply the same pattern to a real use case. A user enters a Bug Report, an
 
     Initial State (before graph runs):
     +-----------------------------------+
-    | Bug Report: "error: unreported exception IOException; must be caught or declared to be thrown"|
+    | Bug Report: "Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: Index 5 out of bounds for length 3,email:yenkrish@gmail.com"|
     | identify_possible_causes: ""                  |
     | suggest_logs_to_check: ""                 |
     | estimate_severity: ""               |
@@ -164,7 +164,7 @@ Now we apply the same pattern to a real use case. A user enters a Bug Report, an
                     v
     After receive_request:
     +-----------------------------------+
-    | Bug Report: "error: unreported exception IOException; must be caught or declared to be thrown"|  <-- unchanged
+    | Bug Report: "Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: Index 5 out of bounds for length 3,email:yenkrish@gmail.com"|  <-- unchanged
     | identify_possible_causes: ""                    |  <-- not yet filled
     | suggest_logs_to_check: ""                  |  <-- not yet filled
     | estimate_severity: ""                |  <-- not yet filled
@@ -242,38 +242,130 @@ DEEP BUG FIXING SESSION (10-15 min)
 Sure! Here's a structured DEEPER session designed to help you resolve the `IOException` issue you're facing. We'll break it down into three phases: Investigate, Debug, and Resolve, with clear step-by-step instructions and estimated timing for each phase. Let’s dive in!
 
 ---
+[PROCESS REQUEST] Sending sanitized message to LLM...
+    Message sent to LLM: ""
+
+  [REGEX INPUT GUARD] Scanning for personal data & attacks...
+    PII FOUND: Email address → "yenkrish@gmail.com" → replaced with [REDACTED]
+
+    ORIGINAL MESSAGE : "Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: Index 5 out of bounds for length 3,email:yenkrish@gmail.com"
+    REDACTED MESSAGE : "Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: Index 5 out of bounds for length 3,email:[REDACTED]"
+    RESULT: REDACTED & CONTINUING (PII removed, message forwarded to LLM)
+  [GUARDRAIL AGENT] Reviewing response (can approve/modify/block)...
+  [NLP INPUT GUARD] Checking intent with LLM...
+    ACTION: BLOCK -- The AI response is empty and does not address the user's bug report.
+    RESULT: PASSED -- The user is describing a specific error related to a bug in their code.
+  [BLOCKED] Response blocked (Guardrail Agent): The AI response is empty and does not address the user's bug report.
+  [PROCESS REQUEST] Sending sanitized message to LLM...
+    Message sent to LLM: "Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: Index 5 out of bounds for length 3,email:[REDACTED]"
+  [GUARDRAIL AGENT] Reviewing response (can approve/modify/block)...
+    ACTION: BLOCK -- The AI response is empty and does not address the user's bug report.
+  [BLOCKED] Response blocked (Guardrail Agent): The AI response is empty and does not address the user's bug report.
+
+=======================================================
+  YOUR PERSONALIZED ANALYSIS
+=======================================================
+
+DEEP BUG FIXING SESSION (10-15 min)
+=============================================
+Certainly! Let's create a thorough session to analyze and resolve the `ArrayIndexOutOfBoundsException` issue you've encountered. This session will be structured into three phases: Investigate, Debug, and Resolve. Each phase will have clear, supportive step-by-step instructions.
 
 ### Phase 1: Investigate (Identify Possible Causes)
-**Time Estimate:** 5-10 minutes
+**Estimated Time: 10-15 minutes**
 
-1. **Locate the Code Segment:**
-   - Open your codebase and identify the method where the I/O operation is being performed. This could be a method that reads from or writes to a file, network socket, or database.
+1. **Review the Code:**
+   - Locate the section of the code where the array is declared and initialized.
+   - Ensure that the array is initialized with a length of at least 6. For example, if the array is defined as `int[] numbers = new int[3];`, you need to change that to `int[] numbers = new int[6];`.
+
+2. **Check Logic:**
+   - Analyze any loops or conditions that interact with the array. Look for any logic that modifies the array size or attempts to access it.
+   - If there are loop constructs (e.g., for-loops) that access array elements, ensure that they iterate within the bounds of the array (i.e., use `< array.length`).
+
+3. **Add Error Handling:**
+   - Implement a try-catch block around the code that accesses the array. This will help catch `ArrayIndexOutOfBoundsException` and provide more context.
+   - Example:
+     ```java
+     try {
+         // Accessing array
+         System.out.println(array[5]);
+     } catch (ArrayIndexOutOfBoundsException e) {
+         System.out.println("Error: " + e.getMessage() + ". Array length: " + array.length);
+     }
+     ```
    
-2. **Review Exception Handling:**
-   - Check if the I/O operation is wrapped in a `try-catch` block. If not, that’s likely the cause of the exception.
-   - If the operation is inside a method that does not declare `throws IOException`, you will need to handle it.
+4. **Document Findings:**
+   - Make notes of any issues you find and suggested fixes. This will help streamline the debugging process later.
 
-3. **Decide on Exception Handling Approach:**
-   - **Option 1:** If you want to handle the exception within the method:
-     - Wrap the I/O operation in a `try-catch` block.
-     - Log the exception or handle it appropriately.
-   - **Option 2:** If you prefer to allow the exception to propagate:
-     - Modify the method signature to include `throws IOException`.
+### Phase 2: Debug (Check Logs)
+**Estimated Time: 10-15 minutes**
 
-4. **Example Code Adjustment:**
-   ```java
-   // Example for try-catch
-   try {
-       // I/O operation
-   } catch (IOException e) {
-       // Handle exception (e.g., log it)
-   }
+1. **Locate the Log File:**
+   - Navigate to the root directory of your project and locate the `app.log` file.
 
-   // Example for throws declaration
-   public void myMethod() throws IOException {
-       // I/O operation
-   }
-   ```
+2. **Open the Log File:**
+   - Use a text editor or log viewer to open `app.log`.
+
+3. **Search for the Exception:**
+   - Look for entries that mention `ArrayIndexOutOfBoundsException`. You can use the search functionality in the editor (often Ctrl + F) to find this quickly.
+
+4. **Analyze Stack Trace:**
+   - Once you locate the log entry, review the stack trace carefully. Identify the specific line of code that caused the exception and any preceding log entries that might provide context (like variable states).
+
+5. **Cross-reference with Code:**
+   - Based on the log information, cross-reference the line number in your code to confirm if it aligns with your findings from the investigation phase.
+
+### Phase 3: Resolve (Address Severity)
+**Estimated Time: 10-15 minutes**
+
+1. **Implement Fixes:**
+   - Based on your investigation, implement any necessary changes to the array length, access logic, and error handling as discussed earlier.
+
+2. **Test the Code:**
+   - Run your application to test if the changes have resolved the `ArrayIndexOutOfBoundsException`. If the error no longer occurs, great! If it does, revisit the investigation phase to ensure nothing was missed.
+
+3. **Log Any Changes:**
+   - Document the changes you made in your code and any new findings from the logs. Keep a record for future reference.
+
+4. **Consider Additional Testing:**
+   - Consider adding unit tests to verify that your array access logic works correctly under various scenarios, especially edge cases.
+
+### Closing
+Thank you for your diligence in addressing this issue! Remember that debugging can be a process of trial and error, and each step brings you closer to a solution. If you have further questions or need assistance, don’t hesitate to reach out. You're doing great, and your efforts will lead to a more robust application. Happy coding!
+
+📄 This session has been saved to 'deep_bug_fixing_session.txt' for your reference.
+
+-------------------------------------------------------
+  MESSAGE LOG
+-------------------------------------------------------
+  [process_request] Thank you for reaching out about this issue! It looks like you're encountering an ArrayIndexOutOfBoundsException, which can be frustrating. Let's work together to resolve it.
+
+Severity: MODERATE
+  [regex_input_guard] REDACTED: Email address
+  [guardrail_agent] BLOCKED: The AI response is empty and does not address the user's bug report.
+  [nlp_input_guard] PASSED: The user is describing a specific error related to a bug in their code.
+  [suggest_estimate_severity] Done
+  [suggest_identify_possible_causes] Done
+  [suggest_logs_to_check] Done
+  [blocked_response] Blocked message delivered
+  [pick_best_practice] deep_session=True
+  [process_request] Thank you for bringing this issue to our attention! It looks like you're encountering an ArrayIndexOutOfBoundsException, which can be frustrating, and we're here to help you resolve it. 
+
+Severity: MODERATE
+  [deep_practice] Generated deep session and saved to deep_bug_fixing_session.txt
+  [guardrail_agent] BLOCKED: The AI response is empty and does not address the user's bug report.
+  [suggest_estimate_severity] Done
+  [suggest_identify_possible_causes] Done
+  [suggest_logs_to_check] Done
+  [blocked_response] Blocked message delivered
+  [pick_best_practice] deep_session=True
+  [deep_practice] Generated deep session and saved to deep_bug_fixing_session.txt
+
+
+---
+**Question:** "what is the capital of Bangladesh?" *(Not in documents / irrelavant )*
+
+**Answer:**
+> "The question is completely off-topic and not related to a bug report or error description."
 
 ---
 
@@ -411,7 +503,7 @@ Any FAIL at any step → blocked_response → END
 
 | File | What It Is |
 |------|-----------|
-| `guardrails_wellness_graph.py` | Main code -- the guardrail pipeline |
+| `BugReportAnalyzer_Graph.py` | Main code -- the guardrail pipeline |
 | `GUARDRAILS_GUIDE.md` | Detailed guide explaining all three guardrail types |
 | `architecture.md` | Architecture diagrams and state fields |
 | `architecture.drawio` | Visual diagram (open with draw.io extension) |
